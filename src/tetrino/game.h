@@ -59,10 +59,10 @@ public:
     static const int DELAY_DIVISOR_FOR_LEVEL_UP = 10;
 
     // Delayed autoshift initial delay.
-    static const int DAS_DELAY_TIMER = 200;
+    static const int DAS_DELAY_TIMER = 150;
 
     // Delayed autoshift timer for left and right moves.
-    static const int DAS_MOVE_TIMER = 40;
+    static const int DAS_MOVE_TIMER = 16;
 
 #ifdef STC_AUTO_ROTATION
     // Rotation auto-repeat delay.
@@ -295,6 +295,7 @@ private:
     void setMatrixCells(int *matrix, int width, int height, int value);
     void setTetromino(int indexTetromino, StcTetromino *tetromino);
     void start();
+    void addScore(long add);
     void rotateTetromino(bool clockwise);
     bool checkCollision(int dx, int dy);
     void onFilledRows(int filledRows);

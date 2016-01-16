@@ -157,6 +157,20 @@ void Game::end()
     mPlatform->end();
 }
 
+// Score add-up, with 9999999 limit
+void Game::addScore(long add)
+{
+    // this will eventually happen...
+    if (mStats.score <= 9999999L && add > 0)
+    {
+        mStats.score += add;
+    }
+    if (mStats.score > 9999999L || mStats.score < 0)
+    {
+        mStats.score = 9999999L;
+    }
+}
+
 // Rotate falling tetromino. If there are no collisions when the
 // tetromino is rotated this modifies the tetromino's cell buffer.
 void Game::rotateTetromino(bool clockwise)
@@ -188,6 +202,7 @@ void Game::rotateTetromino(bool clockwise)
             }
         }
     }
+#define STC_WALL_KICK_ENABLED
 #ifdef STC_WALL_KICK_ENABLED
     int wallDisplace = 0;
 
@@ -329,16 +344,16 @@ void Game::onFilledRows(int filledRows)
     switch (filledRows)
     {
     case 1:
-        mStats.score += (SCORE_1_FILLED_ROW * (mStats.level + 1));
+        addScore((long)SCORE_1_FILLED_ROW * (mStats.level + 1));
         break;
     case 2:
-        mStats.score += (SCORE_2_FILLED_ROW * (mStats.level + 1));
+        addScore((long)SCORE_2_FILLED_ROW * (mStats.level + 1));
         break;
     case 3:
-        mStats.score += (SCORE_3_FILLED_ROW * (mStats.level + 1));
+        addScore((long)SCORE_3_FILLED_ROW * (mStats.level + 1));
         break;
     case 4:
-        mStats.score += (SCORE_4_FILLED_ROW * (mStats.level + 1));
+        addScore((long)SCORE_4_FILLED_ROW * (mStats.level + 1));
         break;
     default:
         // This shouldn't happen, but if happens kill the game
@@ -474,13 +489,13 @@ void Game::dropTetromino()
     // Update score
     if (mShowShadow)
     {
-        mStats.score += (long)(SCORE_2_FILLED_ROW * (mStats.level + 1)
-                               / SCORE_DROP_WITH_SHADOW_DIVISOR);
+        addScore((long)(SCORE_2_FILLED_ROW * (mStats.level + 1)
+                               / SCORE_DROP_WITH_SHADOW_DIVISOR));
     }
     else
     {
-        mStats.score += (long)(SCORE_2_FILLED_ROW * (mStats.level + 1)
-                               / SCORE_DROP_DIVISOR);
+        addScore(mStats.score += (long)(SCORE_2_FILLED_ROW * (mStats.level + 1)
+                               / SCORE_DROP_DIVISOR));
     }
 #else
     int y = 0;
@@ -490,8 +505,8 @@ void Game::dropTetromino()
     moveTetromino(0, 1); // Force lock
 
     // Update score
-    mStats.score += (long)(SCORE_2_FILLED_ROW * (mStats.level + 1)
-                           / SCORE_DROP_DIVISOR);
+    addScore((long)(SCORE_2_FILLED_ROW * (mStats.level + 1)
+                           / SCORE_DROP_DIVISOR));
 #endif
 
         mPlatform->onPieceDrop();
@@ -604,6 +619,11 @@ void Game::update()
                     rotateTetromino(true);
                 }
 
+                if ((mEvents & EVENT_ROTATE_CCW) != 0)
+                {
+                    rotateTetromino(false);
+                }
+                
                 if ((mEvents & EVENT_MOVE_RIGHT) != 0)
                 {
                     moveTetromino(1, 0);
@@ -616,8 +636,8 @@ void Game::update()
                 if ((mEvents & EVENT_MOVE_DOWN) != 0)
                 {
                     // Update score if the player accelerates downfall
-                    mStats.score += (long)(SCORE_2_FILLED_ROW * (mStats.level + 1)
-                                           / SCORE_MOVE_DOWN_DIVISOR);
+                    addScore((long)(SCORE_2_FILLED_ROW * (mStats.level + 1)
+                                           / SCORE_MOVE_DOWN_DIVISOR));
 
                     moveTetromino(0, 1);
                 }
@@ -668,13 +688,21 @@ void Game::onEventStart(int command)
         mDelayRotation = ROTATION_AUTOREPEAT_DELAY;
 #endif
         break;
+    case EVENT_ROTATE_CCW:
+        mEvents |= EVENT_ROTATE_CCW;
+#ifdef STC_AUTO_ROTATION
+        mDelayRotation = ROTATION_AUTOREPEAT_DELAY;
+#endif
+        break;
     case EVENT_MOVE_LEFT:
         mEvents |= EVENT_MOVE_LEFT;
         mDelayLeft = DAS_DELAY_TIMER;
+        mDelayRight = -1;
         break;
     case EVENT_MOVE_RIGHT:
         mEvents |= EVENT_MOVE_RIGHT;
         mDelayRight = DAS_DELAY_TIMER;
+        mDelayLeft = -1;
         break;
     case EVENT_DROP:        // Fall through
     case EVENT_RESTART:     // Fall through

@@ -60,7 +60,7 @@ int PlatformGB::init(Game *game)
     
     // Don't show batery indicator
     mGb->battery.show = false;
-    
+    mGb->setFrameRate(60);
     return Game::ERROR_NONE;
 }
 
@@ -126,20 +126,28 @@ void PlatformGB::processEvents()
         case GB_KEYDOWN:
             switch (event.key)
             {
-            case BTN_B:
+            case BTN_C:
                 mGame->onEventStart(Game::EVENT_QUIT);
                 break;
             // Rotated Gamebuino: LEFT->DOWN, UP->LEFT, DOWN->RIGHT  
             case BTN_LEFT:
                 mGame->onEventStart(Game::EVENT_MOVE_DOWN);
                 break;
-            case BTN_C:
+            case BTN_B:
                 mGame->onEventStart(Game::EVENT_ROTATE_CW);
                 if ( !mGame->isOver() )
                 {
                     playSoundFX(SND_FX_ROTATE, SND_FX_CHANNEL_1);
                 }
                 break;
+            case BTN_A:
+                mGame->onEventStart(Game::EVENT_ROTATE_CCW);
+                if ( !mGame->isOver() )
+                {
+                    playSoundFX(SND_FX_ROTATE, SND_FX_CHANNEL_1);
+                }
+                break;
+                
             case BTN_UP:
                 mGame->onEventStart(Game::EVENT_MOVE_LEFT);
                 break;
@@ -152,9 +160,9 @@ void PlatformGB::processEvents()
 //            case SDLK_F5:
 //                mGame->onEventStart(Game::EVENT_RESTART);
 //                break;
-            case BTN_A:
-                mGame->onEventStart(Game::EVENT_PAUSE);
-                break;
+//            case BTN_C:
+//                mGame->onEventStart(Game::EVENT_PAUSE);
+//                break;
 //            case SDLK_F2:
 //                mGame->onEventStart(Game::EVENT_SHOW_NEXT);
 //                break;
@@ -374,6 +382,7 @@ void PlatformGB::end()
 {
     // Show batery indicator
     mGb->battery.show = true;
+    mGb->setFrameRate(20);
 
   // No resource to release on Gamebuino
 }
